@@ -1,0 +1,114 @@
+import numpy as np
+import sys
+class Rosenblatt:
+    """Rosenblatt感知器算法"""
+    
+    def __init__(self, input_num):
+        self.bias = 1  # 偏置
+        self.weight =  np.zeros((input_num + 1, 1))  # 权值
+        self.weight[0] = self.bias
+        self.N = 50  # 迭代次数
+        self.mse = []  # 记录均方误差
+    
+    def start(self, input_data, target, i):
+        local_mse = 0
+        for local_data, result_target in zip(data, target):
+            local_mse += self.train_model(np.array([local_data]), result_target, i)
+        mse = local_mse/len(input_data)
+        self.updata_mse(mse)
+                
+    # 学习率参数从1e-1线性下降到1e-5
+    def eta(self, n):
+        return  (1e-5-1e-1)/self.N*n+1e-1
+    
+    # 激活函数(符号函数)
+    def sgn(self, input_data):
+        if(input_data>np.zeros(input_data.shape)).all() == True:  # 当input_data每个元素都大于0时，返回1
+            return 1
+        else:
+            return -1
+        
+    # 前向传播
+    def feed_forward(self, input_data):
+        return self.sgn(np.matmul(self.weight.T, np.hstack((np.ones((1, 1)), input_data)).T))
+    
+    # 训练模型
+    def train_model(self, input_data, right_result, n):
+        result = self.feed_forward(input_data)
+        if result != right_result:
+            self.change_weight(input_data, right_result, result, n)
+        return (right_result-result)**2
+    
+    # 修改权值
+    def change_weight(self, input_data, right_result, result, n):
+        self.weight+=self.eta(n)*(right_result-result)*np.hstack((np.ones((1, 1)), input_data)).T
+        
+    # 更新均方误差
+    def updata_mse(self, mse):
+        self.mse.append(mse)
+        
+        
+import numpy as np
+
+class DBMoon():
+    """生成双月数据集"""
+    def __init__(self, N=1000, d=1, r=10, w=6):
+        self.N=N
+        self.d=d
+        self.r=r
+        self.w=w
+    def dbmoon(self):
+        N1 = 10 * self.N
+        w2 = self.w/2
+        done = True
+        data = np.empty(0)
+        while done:
+            tmp_x = 2*(self.r+w2)*(np.random.random([N1,1])-0.5)
+            tmp_y = (self.r+w2)*np.random.random([N1,1])
+            tmp = np.concatenate((tmp_x, tmp_y), axis=1)
+            tmp_ds = np.sqrt(tmp_x*tmp_x + tmp_y*tmp_y)
+            idx = np.logical_and(tmp_ds>(self.r-w2), tmp_ds<(self.r+w2))
+            idx = (idx.nonzero())[0]
+            if data.shape[0] == 0:
+             data = tmp.take(idx,axis=0)
+            else:
+             data = np.concatenate((data, tmp.take(idx,axis=0)),axis=0)
+            if data.shape[0] >= self.N:
+             done = False
+        db_moon = data[0:self.N,:]
+        data_t = np.empty([self.N,2])
+        data_t[:,0] = data[0:self.N,0] + self.r
+        data_t[:,1] = -data[0:self.N,1] - self.d
+        db_moon = np.concatenate((db_moon, data_t), axis=0)
+        target1 = np.ones(int((len(db_moon)/2)))
+        target2 = -target1
+        target = np.concatenate((target1, target2), axis=0)
+        return db_moon, target
+        
+        
+# 输入层为2     
+neural = Rosenblatt(2)
+db_moon = DBMoon(d=1)
+data, target = db_moon.dbmoon()
+test_data, test_target = db_moon.dbmoon()
+# 训练样本如下
+import matplotlib.pyplot as plt
+plt.scatter(x=data[:, 0], y=data[:, 1])
+plt.show()
+# 测试样本如下
+import matplotlib.pyplot as plt
+plt.scatter(x=test_data[:, 0], y=test_data[:, 1])
+plt.show()
+# 开始训练模型
+for i in range(neural.N):
+    neural.start(data, target, i)
+# 查看模型效果
+pred_y = []
+x=np.arange(-20, 20)
+for i in x:
+    pred_y.append(-neural.weight[1][0]/neural.weight[2][0]*i-neural.weight[0][0]/neural.weight[2][0])
+plt.plot(x, pred_y)
+plt.scatter(x=test_data[:, 0], y=test_data[:, 1])
+plt.show()
+# 查看mse结果
+plt.plot(np.arange(50), neural.mse)
