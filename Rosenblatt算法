@@ -1,5 +1,4 @@
 import numpy as np
-import sys
 class Rosenblatt:
     """Rosenblatt感知器算法"""
     
