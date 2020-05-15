@@ -1,4 +1,4 @@
-#  归并排序
+#  归并排序（有哨兵）
 def merge(A, p, q, r):  # 合并函数, A为数组, A[p...q], A[q+1...r]  注：r是最后一个元素的下标
     n1 = q - p + 1
     n2 = r - q
@@ -30,5 +30,54 @@ def merge_sort(A, p, r):
 
 
 A = [5, 2, 4, 6, 1, 3]
+merge_sort(A, 0, len(A) - 1)  # 传最后一个元素的下标
+print(A)
+
+
+
+
+
+#  归并排序 （无哨兵版）
+def merge(A, p, q, r):  # 合并函数, A为数组, A[p...q], A[q+1...r]  注：r是最后一个元素的下标
+    n1 = q - p + 1
+    n2 = r - q
+    L = []  # 左数组
+    R = []  # 右数组
+    for i in range(n1):
+        L.append(A[p + i])  # 从A[p]开始到A[q]复制给L数组
+    for i in range(n2):
+        R.append(A[q + i + 1])  # 从A[q+1]开始到A[r]复制给R数组
+    i = 0
+    j = 0
+    for k in range(p, r + 1):
+        #  若数组越界，将剩余元素赋给A中
+        if i >= n1:  # L越界
+            for t in range(j, n2):  # 将R数组剩余部分复制给A
+                A[k] = R[t]
+                k += 1
+            break
+        elif j >= n2:  # R越界
+            for t in range(i, n1):  # 将R数组剩余部分复制给A
+                A[k] = L[t]
+                k += 1
+            break
+        else:
+            if L[i] <= R[j]:
+                A[k] = L[i]
+                i = i + 1
+            else:
+                A[k] = R[j]
+                j = j + 1
+
+
+def merge_sort(A, p, r):
+    if p < r:
+        q = (p + r) // 2
+        merge_sort(A, p, q)
+        merge_sort(A, q+1, r)
+        merge(A, p, q, r)
+
+
+A = [5, 2, 4, 6, 3, 1, 7, 0]
 merge_sort(A, 0, len(A) - 1)  # 传最后一个元素的下标
 print(A)
