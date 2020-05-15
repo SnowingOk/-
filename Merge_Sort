@@ -81,3 +81,26 @@ def merge_sort(A, p, r):
 A = [5, 2, 4, 6, 3, 1, 7, 0]
 merge_sort(A, 0, len(A) - 1)  # 传最后一个元素的下标
 print(A)
+
+
+
+# 二分查找
+A = [1, 2, 3, 7, 10, 15, 17]
+v = int(input("输入你想查找的数： "))
+length = len(A)
+left = 0
+right = length - 1
+mid = (left + right) // 2
+for i in range(length):
+    if left > right:
+        print("未找到")
+        break
+    if v == A[mid]:
+        print("找到")
+        break
+    elif v > A[mid]:
+        left = mid + 1
+        mid = (left + right) // 2
+    else:
+        right = mid - 1
+        mid = (left + left) // 2
